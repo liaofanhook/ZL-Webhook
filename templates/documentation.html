@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - Quotation Webhook Handler</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-file-invoice me-2"></i>
+                Quotation Handler
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('api_documentation') }}">
+                            <i class="fas fa-book me-1"></i>API Docs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="fas fa-book me-2"></i>API Documentation</h1>
+                <p class="lead">Complete documentation for the Quotation Webhook Handler API</p>
+
+                <!-- Webhook Endpoint -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-webhook me-2"></i>Webhook Endpoint</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-success me-2">POST</span>
+                            <code class="fs-5">/webhook/quotations</code>
+                        </div>
+                        <p>Receives quotation data via webhook. The endpoint validates the incoming data and stores it in memory.</p>
+
+                        <h5>Request Headers</h5>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Header</th>
+                                        <th>Required</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>Content-Type</code></td>
+                                        <td><span class="badge bg-danger">Required</span></td>
+                                        <td>Must be <code>application/json</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h5>Request Body Schema</h5>
+                        <pre class="bg-dark p-3 rounded"><code>{
+  "id": "string | number",           // Required: Unique quotation identifier
+  "customer_name": "string",         // Required: Customer name
+  "customer_email": "string",        // Optional: Customer email
+  "customer_phone": "string",        // Optional: Customer phone
+  "items": [                         // Required: Array of items (minimum 1)
+    {
+      "name": "string",              // Required: Item name
+      "quantity": "number",          // Required: Item quantity
+      "unit_price": "number",        // Required: Price per unit
+      "description": "string"        // Optional: Item description
+    }
+  ],
+  "total_amount": "number",          // Required: Total quotation amount
+  "notes": "string",                 // Optional: Additional notes
+  "valid_until": "string"            // Optional: Quotation expiry date
+}</code></pre>
+
+                        <h5>Example Request</h5>
+                        <pre class="bg-dark p-3 rounded"><code>curl -X POST {{ request.url_root }}webhook/quotations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "Q-2025-001",
+    "customer_name": "John Doe",
+    "customer_email": "john@example.com",
+    "customer_phone": "+1234567890",
+    "items": [
+      {
+        "name": "Widget A",
+        "quantity": 2,
+        "unit_price": 25.50,
+        "description": "High-quality widget"
+      },
+      {
+        "name": "Service B",
+        "quantity": 1,
+        "unit_price": 100.00,
+        "description": "Professional service"
+      }
+    ],
+    "total_amount": 151.00,
+    "notes": "Bulk discount applied",
+    "valid_until": "2025-09-15"
+  }'</code></pre>
+
+                        <h5>Success Response</h5>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2">200</span>
+                            <span>OK</span>
+                        </div>
+                        <pre class="bg-dark p-3 rounded"><code>{
+  "success": true,
+  "message": "Quotation received successfully",
+  "id": "Q-2025-001"
+}</code></pre>
+
+                        <h5>Error Responses</h5>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-danger me-2">400</span>
+                                <span>Bad Request - Invalid content type</span>
+                            </div>
+                            <pre class="bg-dark p-3 rounded"><code>{
+  "error": "Invalid content type",
+  "message": "Content-Type must be application/json"
+}</code></pre>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-danger me-2">400</span>
+                                <span>Bad Request - Validation failed</span>
+                            </div>
+                            <pre class="bg-dark p-3 rounded"><code>{
+  "error": "Validation failed",
+  "message": "Missing required fields: customer_name, items"
+}</code></pre>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-warning me-2">500</span>
+                                <span>Internal Server Error</span>
+                            </div>
+                            <pre class="bg-dark p-3 rounded"><code>{
+  "error": "Internal server error",
+  "message": "An unexpected error occurred while processing the request"
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Endpoints -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-api me-2"></i>API Endpoints</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Get All Quotations -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary me-2">GET</span>
+                                <code class="fs-6">/api/quotations</code>
+                            </div>
+                            <p>Retrieves all stored quotations.</p>
+                            
+                            <h6>Example Response</h6>
+                            <pre class="bg-dark p-3 rounded"><code>{
+  "quotations": [
+    {
+      "id": "Q-2025-001",
+      "customer_name": "John Doe",
+      "items": [...],
+      "total_amount": 151.00,
+      "received_at": "2025-08-15T10:30:00",
+      "received_from_ip": "192.168.1.1"
+    }
+  ],
+  "total_count": 1
+}</code></pre>
+                        </div>
+
+                        <!-- Health Check -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-info me-2">GET</span>
+                                <code class="fs-6">/health</code>
+                            </div>
+                            <p>Health check endpoint for monitoring service status.</p>
+                            
+                            <h6>Example Response</h6>
+                            <pre class="bg-dark p-3 rounded"><code>{
+  "status": "healthy",
+  "quotations_count": 5,
+  "timestamp": "2025-08-15T10:30:00"
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testing -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-flask me-2"></i>Testing the API</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>You can test the webhook endpoint using various tools:</p>
+
+                        <h5>Using curl</h5>
+                        <pre class="bg-dark p-3 rounded"><code># Test with valid data
+curl -X POST {{ request.url_root }}webhook/quotations \
+  -H "Content-Type: application/json" \
+  -d '{"id":"TEST-001","customer_name":"Test Customer","items":[{"name":"Test Item","quantity":1,"unit_price":50.00}],"total_amount":50.00}'
+
+# Test with invalid data (missing required fields)
+curl -X POST {{ request.url_root }}webhook/quotations \
+  -H "Content-Type: application/json" \
+  -d '{"id":"TEST-002"}'</code></pre>
+
+                        <h5>Using Python requests</h5>
+                        <pre class="bg-dark p-3 rounded"><code>import requests
+import json
+
+url = "{{ request.url_root }}webhook/quotations"
+data = {
+    "id": "PYTHON-001",
+    "customer_name": "Python Test Customer",
+    "items": [
+        {
+            "name": "Test Product",
+            "quantity": 2,
+            "unit_price": 25.00
+        }
+    ],
+    "total_amount": 50.00
+}
+
+response = requests.post(url, json=data)
+print(response.status_code)
+print(response.json())</code></pre>
+
+                        <h5>Using JavaScript fetch</h5>
+                        <pre class="bg-dark p-3 rounded"><code>const data = {
+    id: "JS-001",
+    customer_name: "JavaScript Test Customer",
+    items: [
+        {
+            name: "Test Service",
+            quantity: 1,
+            unit_price: 75.00
+        }
+    ],
+    total_amount: 75.00
+};
+
+fetch("{{ request.url_root }}webhook/quotations", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error("Error:", error));</code></pre>
+                    </div>
+                </div>
+
+                <!-- Data Storage -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-database me-2"></i>Data Storage</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Important:</strong> This application uses in-memory storage. All data will be lost when the server restarts.
+                        </div>
+
+                        <h5>Automatic Data Enhancement</h5>
+                        <p>When quotations are received, the system automatically adds the following metadata:</p>
+                        <ul>
+                            <li><code>received_at</code> - ISO timestamp when the quotation was received</li>
+                            <li><code>received_from_ip</code> - IP address of the sender</li>
+                        </ul>
+
+                        <h5>Duplicate Handling</h5>
+                        <p>If a quotation with an existing ID is received, it will update the existing record rather than creating a duplicate.</p>
+                    </div>
+                </div>
+
+                <!-- Error Handling -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-exclamation-triangle me-2"></i>Error Handling</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>The API implements comprehensive error handling for common issues:</p>
+                        
+                        <ul>
+                            <li><strong>Invalid Content Type:</strong> Returns 400 if Content-Type is not application/json</li>
+                            <li><strong>Malformed JSON:</strong> Returns 400 if the request body contains invalid JSON</li>
+                            <li><strong>Missing Required Fields:</strong> Returns 400 with specific field names that are missing</li>
+                            <li><strong>Invalid Data Types:</strong> Returns 400 if fields have incorrect data types</li>
+                            <li><strong>Empty Items Array:</strong> Returns 400 if the items array is empty</li>
+                            <li><strong>Server Errors:</strong> Returns 500 for unexpected server-side errors</li>
+                        </ul>
+
+                        <p>All error responses follow a consistent format with descriptive messages to help with debugging.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-center py-3 mt-5">
+        <div class="container">
+            <p class="text-muted mb-0">Quotation Webhook Handler &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
